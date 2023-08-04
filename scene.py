@@ -1,4 +1,4 @@
-from utils import IdGenedator, get_mini_ECG, draw_ECG
+from utils import IdGenedator, get_mini_ECG, draw_ECG, InterpolationSegment
 
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import text
@@ -15,38 +15,6 @@ class Point:
         return self.coord
 
 
-class InterpolationSegment:
-    def __init__(self, coord1, val1, coord2, val2):
-        self.coords = []
-        self.vals = []
-
-        if coord1 != coord2:
-
-            self.left_coord= coord1
-            self.left_val = val1
-
-            self.right_coord = coord2
-            self.right_val = val2
-
-            if coord2 < coord1:
-                self.left_coord = coord2
-                self.left_val = val2
-
-                self.right_coord = coord1
-                self.right_val = val1
-            self._calculate_interpolation()
-
-    def get_vals_from_left(self):
-        return self.vals
-
-    def get_indexes_from_left(self):
-        return self.coords
-
-    def _calculate_interpolation(self):
-        self.coords = list(range(self.left_coord, self.right_coord + 1))
-        step = (self.right_val - self.left_val) / (len(self.coords)-1)
-        for i in range(len(self.coords) ):
-            self.vals.append(self.left_val + i * step)
 
 class Scene:
     def __init__(self, signal):
@@ -94,10 +62,23 @@ class Scene:
 
         return pointwise_prediction
 
+    def get_error_pointwise(self):
+        errs = []
+        prediction = self.get_prediction()
+        for i in range(len(prediction)):
+            errs.append(abs(self.signal[i] - prediction[i]))
+        return errs
+
+    def get_err_max_index(self):
+        errs = self.get_error_pointwise()
+        whorst_index = errs.index(max(errs))
+        return whorst_index
+    ########################################################################
     def draw(self, ax):
         draw_ECG(ax, self.signal)
         self.draw_points(ax)
         self.draw_preiction(ax)
+        self.draw_err(ax)
         ax.legend(fancybox=True, framealpha=0.5)
 
     def draw_points(self, ax):
@@ -106,7 +87,16 @@ class Scene:
             text(point.coord, max(self.signal)/2, str(name), rotation=0, verticalalignment='center')
 
     def draw_preiction(self, ax):
-        ax.plot(self.get_prediction(), 'green', label='предсказание')
+        ax.plot(self.get_prediction(),  'green',ls="--", label='предсказание')
+
+    def draw_err(self, ax):
+        ax.plot(self.get_error_pointwise(), 'red', label='ошибка', alpha=0.2)
+        whorst_index = self.get_err_max_index()
+        ax.vlines(x=whorst_index, ymin=0, ymax=max(self.signal), colors='red', lw=2, alpha=0.5)
+        text(whorst_index, max(self.signal) / 2, str("худшее"), rotation=0, verticalalignment='center', color='red')
+
+
+
 
 if __name__ == '__main__':
     signal = get_mini_ECG()
