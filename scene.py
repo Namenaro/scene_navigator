@@ -33,6 +33,8 @@ class Scene:
     def get_index_by_name(self, name):
         return self.names_to_points[name].get_coord()
 
+    def get_name_by_index(self, index):
+        return self.indexes_to_names.get(index, None)
 
     def add_point(self, coord):
         name = self.idgen.get_id()

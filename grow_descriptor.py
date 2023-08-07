@@ -26,7 +26,12 @@ class Grower:
         self.scene = scene_winner
 
     def _select_current_point(self):
-        return point_name
+        index_max_err = self.scene.get_err_max_index()
+        name_in_index = self.scene.get_name_by_index(index_max_err)
+        if name_in_index is not None:
+            return name_in_index
+        new_point_name = self.scene.add_point(index_max_err)
+        return new_point_name
 
     def _select_indexes_candidates(self):
         return indexes
