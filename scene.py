@@ -36,12 +36,24 @@ class Scene:
     def get_name_by_index(self, index):
         return self.indexes_to_names.get(index, None)
 
+    def get_points_coords(self):
+        points_coords = list([val.coord for val in self.names_to_points.values()])
+        return points_coords
+
     def add_point(self, coord):
         name = self.idgen.get_id()
         self.names_to_points[name] = Point(coord)
         self.indexes_to_names[coord]=name
         self.coords_to_predictions[coord] = self.signal[coord]
         return name
+
+    def get_or_create_point(self, index):
+        name_in_index = self.get_name_by_index(index)
+        if name_in_index is not None:
+            return name_in_index
+
+        new_point_name = self.add_point(index)
+        return new_point_name
 
     def add_parent(self, child_name, parent_name):
         self.names_to_points[child_name].add_parent(parent_name)
@@ -125,8 +137,8 @@ class Scene:
         draw_ECG(ax, self.signal)
         self.draw_points(ax)
         self.draw_preiction(ax)
-        self.draw_err(ax)
-        self.draw_extremums()
+        #self.draw_err(ax)
+        #self.draw_extremums()
         ax.legend(fancybox=True, framealpha=0.5)
 
     def draw_extremums(self):
