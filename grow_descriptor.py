@@ -8,6 +8,7 @@ from copy import deepcopy
 
 
 # АЛГОРИТМ: два этажа соревнования:
+
 # 1) из какого максимума ошибки расти (соревнование максимумов ошибки)  ---> отбор итога по W
 # 2) куда расти из конкретноко максимума  ---> соревнование по w_step
 
@@ -29,7 +30,12 @@ from copy import deepcopy
 # Gосле этого реализуем w (т.к. генератор сцен уже есть, а тестировать работу  w надо на "боевых" сценах, т.к. бассейны меняются)
 # Класс сцены доработать так, чтобб получать выборки для расчета w предсказания (вероятно, то, что уже накрыто сегментами, надо убирать из выборки,
 # на которой расчитвыается w). Протестить джиттер w.
-# ЗАМЕЧАНИЕ: при  придсказании внутри  сегмента наш сигнал это отклонение от интерполяционной линии??? Или предсказывать абсолютно?
+# ЗАМЕЧАНИЕ: когда будем писать рекогнайз, то создаваемую в памяти долгосрочную стр-ру надо будет пережеделать так:
+# придсказании внутри  сегмента - это отклонение от интерполяционной линии. Т.е. при росте стр-ры все точки можно брать абсолютно.
+# Но не для запуска на тестовых сигналах
+
+# ГЛОБАЛЬНОЕ ЗАМЕЧАНИЕ:
+# Возмножно, тестирование на джиттер будет здесь на всех этажах
 
 
 class Grower:
@@ -37,34 +43,31 @@ class Grower:
         self.scene = Scene(signal)
 
     def step(self):
-        # находим пик ошибки на кущей сцене
+        # находим пик ошибки на кущей сцене (там точки быть не может)
         index_max_err = self.scene.get_err_max_index()
 
-        # если там есть точка, то назначаем рабочей ее. Иначе -стаивм новую
+        # ставим туда точку
+        current_point_name =
 
-        current_point_name = self._select_current_point()
+        # находим область ограничения поиска
+        x_max, x_min = self.get_restriction(index_max_err)
 
-        # для текущей рабочей точки определеяем горизонт ее действия
-        #  этом горизонтке находим индексы-кандидаты
-        indexes = self._select_indexes_candidates()
+        # TODO строим баасейн для замера по нему w?
 
-        # для каждого кандидата делаем слепок сцены с добавленнымс сегментом и замеряем q
+        #  в этой обл. находим индексы-кандидаты
+        indexes = self._select_indexes_candidates(x_max, x_min, index_max_err)
+
+        # для каждого кандидата делаем слепок сцены с добавленнымс сегментом и замеряем err
         # выбираем победителя
-        self._get_winner_candidate(indexes, current_point_name)
+        self._get_winner_candidate(indexes, index_max_err)
+        #TODO отдельный проход по стр-ре потом: попытка уменьшить кол-во точек за счет слияния соседних
 
 
+    def _select_indexes_candidates(self, x_min, x_max, index_max_err):
+        indexes_candidates=[ x_min, x_max, index_max_err]
 
-    def _select_indexes_candidates(self):
-        indexes_candidates=[]
-
-        # TODO пока будем проверять избыточное кол-во кандидатов:
-
-        # Первый пул: точки-кандидаты
-        coords_of_points = self.scene.get_points_coords()
-        indexes_candidates = indexes_candidates + coords_of_points
-
-        # Второй пул: экстремумы сигнала
-        coords_of_extrms = self.scene.get_all_extemums_of_signal()
+        # экстремумы сигнала
+        coords_of_extrms = self.scene.get_extrms_in_interval(x_min, x_max)
         indexes_candidates = indexes_candidates + coords_of_extrms
 
         return indexes_candidates
