@@ -3,7 +3,7 @@ from utils import InterpolationSegment, Distr, get_distr_of_min_statistics
 import numpy as np
 
 
-class Measurer:
+class MeasurerWUnnormed: # не получает ни самого сигнала, ни предсказания
     def __init__(self, u_err, v_errs_on_segment, bassin_vs):
         self.u_err = u_err
         self.v_errs_on_segment = v_errs_on_segment

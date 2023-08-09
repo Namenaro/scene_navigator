@@ -28,6 +28,7 @@ from copy import deepcopy
 # Рабочий план:
 # Сначала реализуем Соревнование 2 при заданном кол-ве шагов: с выбором бассейна, в котором определяются точки/индексы кандидаты, пока что с Errr.
 # Gосле этого реализуем w (т.к. генератор сцен уже есть, а тестировать работу  w надо на "боевых" сценах, т.к. бассейны меняются)
+# # TODO для соревнования по w нехватает динамического расчета нормировочного мн-ля (норминовать на масштаб сигнала этого типа сенсоров)
 # Класс сцены доработать так, чтобб получать выборки для расчета w предсказания (вероятно, то, что уже накрыто сегментами, надо убирать из выборки,
 # на которой расчитвыается w). Протестить джиттер w.
 # ЗАМЕЧАНИЕ: когда будем писать рекогнайз, то создаваемую в памяти долгосрочную стр-ру надо будет пережеделать так:
@@ -39,29 +40,53 @@ from copy import deepcopy
 
 
 class Grower:
-    def __init__(self, signal):
-        self.scene = Scene(signal)
+    def __init__(self, scene):
+        self.scene = deepcopy(scene)
+        # TODO отдельный проход по стр-ре: попытка уменьшить кол-во точек за счет слияния соседних (релаксация аппроксиматора)
 
-    def step(self):
+    def get_result_scene(self):
+        return self.scene
+
+    def make_grow(self, start_index, nsteps):
+        self.step(start_index)
+        for i in range(1, nsteps):
+            self.step()
+
+    def step(self, index_max_err=None):
         # находим пик ошибки на кущей сцене (там точки быть не может)
-        index_max_err = self.scene.get_err_max_index()
+        if index_max_err is None:
+            index_max_err = self.scene.get_err_max_index()
 
         # ставим туда точку
-        current_point_name =
+        current_point_name = self.scene.add_point(index_max_err)
 
         # находим область ограничения поиска
         x_max, x_min = self.get_restriction(index_max_err)
 
-        # TODO строим баасейн для замера по нему w?
 
         #  в этой обл. находим индексы-кандидаты
         indexes = self._select_indexes_candidates(x_max, x_min, index_max_err)
 
         # для каждого кандидата делаем слепок сцены с добавленнымс сегментом и замеряем err
         # выбираем победителя
-        self._get_winner_candidate(indexes, index_max_err)
-        #TODO отдельный проход по стр-ре потом: попытка уменьшить кол-во точек за счет слияния соседних
+        self._get_winner_candidate(indexes, current_point_name)
 
+
+    def get_restriction(self, index):
+        x_min_point = self.scene.get_left_nearest_point(index)
+        x_max_point = self.scene.get_right_nearest_point(index)
+
+        if x_min_point is None:
+            x_min = 0
+        else:
+            x_min = x_min_point.get_coord()
+
+        if x_max_point is None:
+            x_max = self.scene.get_size() - 1
+        else:
+            x_max = x_max_point.get_coord()
+
+        return x_max, x_min
 
     def _select_indexes_candidates(self, x_min, x_max, index_max_err):
         indexes_candidates=[ x_min, x_max, index_max_err]
@@ -73,8 +98,8 @@ class Grower:
         return indexes_candidates
 
 
-
     def _get_winner_candidate(self, index_candidates, current_point_name):
+
         errs = []
         for index_candidate in index_candidates:
             scene = deepcopy(self.scene)
@@ -99,8 +124,9 @@ if __name__ == '__main__':
     log = HtmlLogger("grower_TEST")
 
     signal = get_mini_ECG()
+    scene = Scene(signal)
 
-    grower = Grower(signal)
+    grower = Grower(scene)
 
     # логгер шагов роста: каждый шаг в хтмл (визуальная отладка)
     for i in range(10):

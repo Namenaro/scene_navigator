@@ -47,6 +47,9 @@ class Scene:
         self.coords_to_predictions[coord] = self.signal[coord]
         return name
 
+    def get_size(self):
+        return len(self.signal)
+
     def get_or_create_point(self, index):
         name_in_index = self.get_name_by_index(index)
         if name_in_index is not None:
@@ -120,6 +123,12 @@ class Scene:
         coords_of_extrms = finder.get_coords_extremums()
         return coords_of_extrms
 
+
+    def get_all_maxes_of_err(self):
+        finder = ExtremumFinder(signal=self.get_error_pointwise())
+        indexes = finder.get_coords_maxes()
+        return indexes
+
     def get_extrms_in_interval(self, index1, index2):
         left = index1
         right = index2
@@ -137,7 +146,7 @@ class Scene:
         draw_ECG(ax, self.signal)
         self.draw_points(ax)
         self.draw_preiction(ax)
-        #self.draw_err(ax)
+        self.draw_err(ax)
         #self.draw_extremums()
         ax.legend(fancybox=True, framealpha=0.5)
 
@@ -156,9 +165,9 @@ class Scene:
 
     def draw_err(self, ax):
         ax.plot(self.get_error_pointwise(), 'red', label='ошибка', alpha=0.2)
-        whorst_index = self.get_err_max_index()
-        ax.vlines(x=whorst_index, ymin=0, ymax=max(self.signal), colors='red', lw=2, alpha=0.5)
-        text(whorst_index, max(self.signal) / 2, str("худшее"), rotation=0, verticalalignment='center', color='red')
+        #whorst_index = self.get_err_max_index()
+        #ax.vlines(x=whorst_index, ymin=0, ymax=max(self.signal), colors='red', lw=2, alpha=0.5)
+        #text(whorst_index, max(self.signal) / 2, str("худшее"), rotation=0, verticalalignment='center', color='red')
 
 
     def draw_situation_for_index(self, ax, index):
