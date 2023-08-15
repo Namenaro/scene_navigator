@@ -40,8 +40,9 @@ class Scene:
         points_coords = list([val.coord for val in self.names_to_points.values()])
         return points_coords
 
-    def add_point(self, coord):
-        name = self.idgen.get_id()
+    def add_point(self, coord, name=None):
+        if name is None:
+            name = self.idgen.get_id()
         self.names_to_points[name] = Point(coord)
         self.indexes_to_names[coord]=name
         self.coords_to_predictions[coord] = self.signal[coord]
@@ -95,6 +96,7 @@ class Scene:
         whorst_index = errs.index(max(errs))
         return whorst_index
 
+
     def get_err_sum(self):
         return sum(self.get_error_pointwise())
 
@@ -140,6 +142,12 @@ class Scene:
             if index>=left and index<=right:
                 coords_extrms.append(index)
         return coords_extrms
+
+    def get_start_id(self):
+        return 0
+
+    def get_num_of_points(self):
+        return len(self.names_to_points)
 
     ########################################################################
     def draw(self, ax):

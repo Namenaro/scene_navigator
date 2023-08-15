@@ -1,11 +1,14 @@
-from grow_nsteps_simple import Grower
+from .grow_nsteps_simple import Grower
 from utils import HtmlLogger, get_mini_ECG
-from scene import Scene
+from SCENE.scene import Scene
 
 
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import text
-from copy import deepcopy
+
+
+# Жадная минимизации ошибки аппроксимации на сцене в физических единицах (никакой нормировки, никакого w)
+# Жадность на n шагов горизонта roll-forward (т.о. учитывает не только амплитуду ошибки, но и пологость горба этой ошибки)
+# Нет релаксации сцены (нужна)
 
 class FullGrow:
     def __init__(self, signal):
@@ -31,6 +34,8 @@ class FullGrow:
         # сцену победитель  делаем ее текущей
         self.scene = best_scene
 
+    def get_scene(self):
+        return self.scene
 
 if __name__ == '__main__':
     log = HtmlLogger("FULL_grower_TEST")

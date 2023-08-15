@@ -3,13 +3,16 @@ from utils import InterpolationSegment, Distr, get_distr_of_min_statistics
 import numpy as np
 
 
+# Нетривиальность при данном предсказании получить такую-то ошибку описания
+# фрагмента бассейна пименно рядом с предсказанным местом. Тут только про вероятность сцепленности элементов предсказания др. с др.
+
 class MeasurerWUnnormed: # не получает ни самого сигнала, ни предсказания
     def __init__(self, u_err, v_errs_on_segment, bassin_vs):
         self.u_err = u_err
         self.v_errs_on_segment = v_errs_on_segment
         self.bassin_vs = bassin_vs
 
-    def get_p_of_so_good_rescription(self):
+    def get_w(self):
         # ШАГ БЕЗ УЧЕТА U_ERR:
         # без возвращения выбираем два значния (b и c) из бассейна + segment_len штук др. значений
         # по значениям b, c строим интерполяцию (длиной в накрытый по факту сегмент) над "случайно построенным" сегментом
