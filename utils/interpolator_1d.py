@@ -20,6 +20,9 @@ class InterpolationSegment:
                 self.right_coord = coord1
                 self.right_val = val1
             self._calculate_interpolation()
+        else:
+            self.coords = [coord1]
+            self.vals = [val1]
 
     def get_vals_from_left(self):
         return self.vals

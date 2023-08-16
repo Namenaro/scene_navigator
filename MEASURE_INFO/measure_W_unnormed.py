@@ -31,7 +31,7 @@ class MeasurerWUnnormed: # не получает ни самого сигнал�
 
     def _fill_sample_of_errs_of_random_decriptions(self):
         sample = []
-        N = 50
+        N = 100
         for _ in range(0, N):
             segment_len = len(self.v_errs_on_segment)
             random_vs = np.random.choice(self.bassin_vs, segment_len + 2, replace=False)
@@ -48,6 +48,47 @@ class MeasurerWUnnormed: # не получает ни самого сигнал�
                 errs_sum += abs_err_in_index
             sample.append(errs_sum)
         return sample
+
+def exp_1():
+    bassin_err = [0, 1, 1, 2, 0, 5, 1, 0, 0, 0, 1]
+    segment_err = [1, 1, 2]
+
+
+    u_err = 1
+    print(MeasurerWUnnormed(u_err, segment_err, bassin_err).get_w())
+
+    u_err = 2
+    print(MeasurerWUnnormed(u_err, segment_err, bassin_err).get_w())
+
+    u_err = 3
+    print(MeasurerWUnnormed(u_err, segment_err, bassin_err).get_w())
+
+    u_err = 4
+    print(MeasurerWUnnormed(u_err, segment_err, bassin_err).get_w())
+
+
+def exp_2():
+    bassin_err = [0, 1, 1, 2, 0, 5, 1, 0, 0, 0, 1]
+    u_err = 1
+
+    segment_err = [1]
+    print(MeasurerWUnnormed(u_err, segment_err, bassin_err).get_w())
+
+    segment_err = [1,1]
+    print(MeasurerWUnnormed(u_err, segment_err, bassin_err).get_w())
+
+    segment_err = [1, 1, 2]
+    print(MeasurerWUnnormed(u_err, segment_err, bassin_err).get_w())
+
+    segment_err = [1, 1, 2, 0]
+    print(MeasurerWUnnormed(u_err, segment_err, bassin_err).get_w())
+
+    segment_err = [1, 1, 2, 0, 5]
+    print(MeasurerWUnnormed(u_err, segment_err, bassin_err).get_w())
+
+
+if __name__ == '__main__':
+    exp_2()
 
 
 
